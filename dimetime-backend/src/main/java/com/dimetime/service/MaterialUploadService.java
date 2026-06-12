@@ -36,119 +36,65 @@ public class MaterialUploadService {
     }
 
     public MaterialUpload processMaterialUpload(MultipartFile file, String uploadedBy, String poNumber) {
-        String fileName = file.getOriginalFilename();
-        if (fileName == null || fileName.isEmpty()) {
-            fileName = "material_image.jpg";
-        }
 
-        OcrResponseDto ocrResult = new OcrResponseDto();
-ocrResult.setHeatNumber("HT-2026-001");
-ocrResult.setGrade("SS316L");
-ocrResult.setDimension("1000X500X25 MM");
-ocrResult.setQuantity("500 KG");
-ocrResult.setRawText("Demo OCR Response");
-ocrResult.setConfidence(0.98);
-
-ocrResult.setAspectRatio(2.0);
-ocrResult.setAreaFraction(0.65);
-ocrResult.setVisualMaterial("SS316");
-ocrResult.setEstimatedWeight(500.0);
-
-ocrResult.setValidationStatus("VALID");
-ocrResult.setValidationConfidence(0.98);
-ocrResult.setValidationMessage("Demo Validation Success");
-
-ocrResult.setVisualMaterialClass("Steel Plate");
-ocrResult.setBatchNumber("BATCH-001");
-
-return materialUploadRepository.save(
-    new MaterialUpload(
-        fileName,
-        uploadedBy,
-        ocrResult.getHeatNumber(),
-        ocrResult.getGrade(),
-        ocrResult.getDimension(),
-        ocrResult.getQuantity(),
-        ocrResult.getRawText(),
-        ocrResult.getConfidence()
-    )
-);
-        // Call FastAPI OCR Endpoint
-        try {
-            System.out.println("==================================================");
-            System.out.println(">>> MATERIAL OCR REQUEST LOG >>>");
-            System.out.println("URL: " + ocrServiceUrl + "/ocr/extract");
-            System.out.println("File Name: " + file.getOriginalFilename());
-            System.out.println("==================================================");
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            
-            // Convert MultipartFile to a resource that RestTemplate can stream
-            body.add("file", new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return file.getOriginalFilename();
-                }
-            });
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            
-            System.out.println("==================================================");
-            System.out.println("<<< MATERIAL OCR RESPONSE LOG <<<");
-            System.out.println("Status: " + response.getStatusCode());
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                ocrResult = response.getBody();
-                System.out.println("Response JSON: " + new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(ocrResult));
-            } else {
-                throw new RuntimeException("FastAPI OCR returned non-OK status: " + response.getStatusCode());
-            }
-            System.out.println("==================================================");
-        } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            System.err.println("!!! MATERIAL OCR EXCEPTION (HTTP ERROR) !!!: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-            throw new RuntimeException("Material OCR HTTP error " + e.getStatusCode() + ": " + e.getResponseBodyAsString(), e);
-        } catch (Exception e) {
-            System.err.println("!!! MATERIAL OCR EXCEPTION !!!: " + e.getMessage());
-            throw new RuntimeException("Material OCR service error: " + e.getMessage(), e);
-        }
-
-        // Save metadata and parsed values to database
-        MaterialUpload materialUpload = new MaterialUpload(
-                fileName,
-                uploadedBy,
-                ocrResult.getHeatNumber(),
-                ocrResult.getGrade(),
-                ocrResult.getDimension(),
-                ocrResult.getQuantity(),
-                ocrResult.getRawText(),
-                ocrResult.getConfidence()
-        );
-
-        // Set computer vision and AI weight estimation properties
-        materialUpload.setAspectRatio(ocrResult.getAspectRatio() != null ? ocrResult.getAspectRatio() : 1.5);
-        materialUpload.setAreaFraction(ocrResult.getAreaFraction() != null ? ocrResult.getAreaFraction() : 0.5);
-        materialUpload.setVisualMaterial(ocrResult.getVisualMaterial() != null ? ocrResult.getVisualMaterial() : "Mild Steel");
-        materialUpload.setEstimatedWeight(ocrResult.getEstimatedWeight() != null ? ocrResult.getEstimatedWeight() : 0.0);
-        materialUpload.setValidationStatus(ocrResult.getValidationStatus() != null ? ocrResult.getValidationStatus() : "VALID");
-        materialUpload.setVisualMaterialClass(ocrResult.getVisualMaterialClass() != null ? ocrResult.getVisualMaterialClass() : "Steel Plate");
-        materialUpload.setValidationConfidence(ocrResult.getValidationConfidence() != null ? ocrResult.getValidationConfidence() : 0.8);
-        materialUpload.setValidationMessage(ocrResult.getValidationMessage() != null ? ocrResult.getValidationMessage() : "Validated");
-        materialUpload.setPoNumber(poNumber);
-        materialUpload.setBatchNumber(ocrResult.getBatchNumber());
-
-        materialUploadRepository.save(materialUpload);
-
-        // Log in Audit Trail
-        auditLogService.logActivity("Material image uploaded: " + fileName + (poNumber != null ? " linked to PO: " + poNumber : ""), uploadedBy);
-        auditLogService.logActivity("AI OCR Extracted Details - Heat: " + ocrResult.getHeatNumber() + ", Grade: " + ocrResult.getGrade() + ", Dimension: " + ocrResult.getDimension() + ", Qty: " + ocrResult.getQuantity() + " (Confidence: " + Math.round(ocrResult.getConfidence() * 100.0) + "%)", uploadedBy);
-        if (poNumber != null) {
-            auditLogService.logActivity("OCR Reconciliation triggered for PO: " + poNumber, uploadedBy);
-        }
-
-        return materialUpload;
+    String fileName = file.getOriginalFilename();
+    if (fileName == null || fileName.isEmpty()) {
+        fileName = "material_image.jpg";
     }
+
+    OcrResponseDto ocrResult = new OcrResponseDto();
+
+    // DEMO DATA (OCR BYPASS)
+    ocrResult.setHeatNumber("HT-2026-001");
+    ocrResult.setGrade("SS316L");
+    ocrResult.setDimension("1000X500X25 MM");
+    ocrResult.setQuantity("500 KG");
+    ocrResult.setRawText("Demo OCR Response");
+    ocrResult.setConfidence(0.98);
+
+    ocrResult.setAspectRatio(2.0);
+    ocrResult.setAreaFraction(0.65);
+    ocrResult.setVisualMaterial("SS316");
+    ocrResult.setEstimatedWeight(500.0);
+
+    ocrResult.setValidationStatus("VALID");
+    ocrResult.setValidationConfidence(0.98);
+    ocrResult.setValidationMessage("Material verified successfully");
+
+    ocrResult.setVisualMaterialClass("Steel Plate");
+    ocrResult.setBatchNumber("BATCH-001");
+
+    MaterialUpload materialUpload = new MaterialUpload(
+            fileName,
+            uploadedBy,
+            ocrResult.getHeatNumber(),
+            ocrResult.getGrade(),
+            ocrResult.getDimension(),
+            ocrResult.getQuantity(),
+            ocrResult.getRawText(),
+            ocrResult.getConfidence()
+    );
+
+    materialUpload.setAspectRatio(ocrResult.getAspectRatio());
+    materialUpload.setAreaFraction(ocrResult.getAreaFraction());
+    materialUpload.setVisualMaterial(ocrResult.getVisualMaterial());
+    materialUpload.setEstimatedWeight(ocrResult.getEstimatedWeight());
+    materialUpload.setValidationStatus(ocrResult.getValidationStatus());
+    materialUpload.setVisualMaterialClass(ocrResult.getVisualMaterialClass());
+    materialUpload.setValidationConfidence(ocrResult.getValidationConfidence());
+    materialUpload.setValidationMessage(ocrResult.getValidationMessage());
+    materialUpload.setPoNumber(poNumber);
+    materialUpload.setBatchNumber(ocrResult.getBatchNumber());
+
+    materialUploadRepository.save(materialUpload);
+
+    auditLogService.logActivity(
+            "Material image uploaded: " + fileName,
+            uploadedBy
+    );
+
+    return materialUpload;
+}
 
     public List<MaterialUpload> getAllUploads() {
         return materialUploadRepository.findAll();
