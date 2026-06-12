@@ -50,40 +50,54 @@ public Payment initiatePayment(String invoiceNumber,
                                Double amount,
                                String operator) {
 
-    if (!operator.toLowerCase().contains("supplier")) {
-        throw new RuntimeException("Only Supplier can initiate payment");
-    }
-        if (invOpt.isEmpty()) {
-            throw new IllegalArgumentException("Invoice not found: " + invoiceNumber);
-        }
-        Invoice invoice = invOpt.get();
+    Optional<Invoice> invOpt =
+            invoiceService.getInvoiceByNumber(invoiceNumber);
 
-        long currentCount = paymentRepository.count();
-        String paymentNumber = String.format("PAY-2026-%04d", currentCount + 1);
-
-        Payment payment = new Payment(
-                paymentNumber,
-                invoiceNumber,
-                invoice.getPoNumber(),
-                invoice.getGrnNumber(),
-                amount,
-                paymentMethod,
-                "COD".equalsIgnoreCase(paymentMethod) ? "PAYMENT_PENDING" : "PAYMENT_IN_PROGRESS",
-                null,
-                null
+    if (invOpt.isEmpty()) {
+        throw new IllegalArgumentException(
+                "Invoice not found: " + invoiceNumber
         );
-
-        Payment saved = paymentRepository.save(payment);
-
-        // Update Invoice status to reflect payment initiated
-        invoiceService.updateStatus(invoiceNumber, "PAYMENT_PENDING");
-
-        // Audit & Notification
-        auditLogService.logActivity("Payment initiated: " + paymentNumber + " for Invoice: " + invoiceNumber + " via " + paymentMethod, operator);
-        sendNotificationToParties(invoice.getPoNumber(), "Payment initiated for Invoice " + invoiceNumber + " via " + paymentMethod);
-
-        return saved;
     }
+
+    Invoice invoice = invOpt.get();
+
+    long currentCount = paymentRepository.count();
+    String paymentNumber =
+            String.format("PAY-2026-%04d", currentCount + 1);
+
+    Payment payment = new Payment(
+            paymentNumber,
+            invoiceNumber,
+            invoice.getPoNumber(),
+            invoice.getGrnNumber(),
+            amount,
+            paymentMethod,
+            "COD".equalsIgnoreCase(paymentMethod)
+                    ? "PAYMENT_PENDING"
+                    : "PAYMENT_IN_PROGRESS",
+            null,
+            null
+    );
+
+    Payment saved = paymentRepository.save(payment);
+
+    invoiceService.updateStatus(
+            invoiceNumber,
+            "PAYMENT_PENDING"
+    );
+
+    auditLogService.logActivity(
+            "Payment initiated: " + paymentNumber,
+            operator
+    );
+
+    sendNotificationToParties(
+            invoice.getPoNumber(),
+            "Payment initiated for Invoice " + invoiceNumber
+    );
+
+    return saved;
+}
 
     @Transactional
     public Payment completePayment(String paymentNumber, String transactionReference, String operator) {
