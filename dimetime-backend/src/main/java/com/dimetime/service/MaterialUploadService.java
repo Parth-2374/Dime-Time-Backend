@@ -46,7 +46,7 @@ public class MaterialUploadService {
 
     // DEMO DATA (OCR BYPASS)
     ocrResult.setHeatNumber("HT-2026-001");
-    ocrResult.setGrade("SS316L");
+    ocrResult.setGrade("SS304");
     ocrResult.setDimension("1000X500X25 MM");
     ocrResult.setQuantity("500 KG");
     ocrResult.setRawText("Demo OCR Response");
@@ -62,7 +62,7 @@ public class MaterialUploadService {
     ocrResult.setValidationMessage("Material verified successfully");
 
     ocrResult.setVisualMaterialClass("Steel Plate");
-    ocrResult.setBatchNumber("BATCH-001");
+    ocrResult.setBatchNumber("SS304");
 
     MaterialUpload materialUpload = new MaterialUpload(
             fileName,
