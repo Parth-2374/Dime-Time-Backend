@@ -44,10 +44,15 @@ public class PaymentService {
     public Optional<Payment> getPaymentByInvoiceNumber(String invoiceNumber) {
         return paymentRepository.findByInvoiceNumber(invoiceNumber);
     }
+@Transactional
+public Payment initiatePayment(String invoiceNumber,
+                               String paymentMethod,
+                               Double amount,
+                               String operator) {
 
-    @Transactional
-    public Payment initiatePayment(String invoiceNumber, String paymentMethod, Double amount, String operator) {
-        Optional<Invoice> invOpt = invoiceService.getInvoiceByNumber(invoiceNumber);
+    if (!operator.toLowerCase().contains("supplier")) {
+        throw new RuntimeException("Only Supplier can initiate payment");
+    }
         if (invOpt.isEmpty()) {
             throw new IllegalArgumentException("Invoice not found: " + invoiceNumber);
         }
