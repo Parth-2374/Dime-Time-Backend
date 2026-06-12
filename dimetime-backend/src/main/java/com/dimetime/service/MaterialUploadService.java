@@ -62,7 +62,7 @@ public class MaterialUploadService {
     ocrResult.setValidationMessage("Material verified successfully");
 
     ocrResult.setVisualMaterialClass("Steel Plate");
-    ocrResult.setBatchNumber("SS304");
+    ocrResult.setBatchNumber("BT-2026-001");
 
     MaterialUpload materialUpload = new MaterialUpload(
             fileName,
