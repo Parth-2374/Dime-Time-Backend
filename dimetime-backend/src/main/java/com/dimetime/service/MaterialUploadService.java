@@ -42,7 +42,37 @@ public class MaterialUploadService {
         }
 
         OcrResponseDto ocrResult = new OcrResponseDto();
+ocrResult.setHeatNumber("HT-2026-001");
+ocrResult.setGrade("SS316L");
+ocrResult.setDimension("1000X500X25 MM");
+ocrResult.setQuantity("500 KG");
+ocrResult.setRawText("Demo OCR Response");
+ocrResult.setConfidence(0.98);
 
+ocrResult.setAspectRatio(2.0);
+ocrResult.setAreaFraction(0.65);
+ocrResult.setVisualMaterial("SS316");
+ocrResult.setEstimatedWeight(500.0);
+
+ocrResult.setValidationStatus("VALID");
+ocrResult.setValidationConfidence(0.98);
+ocrResult.setValidationMessage("Demo Validation Success");
+
+ocrResult.setVisualMaterialClass("Steel Plate");
+ocrResult.setBatchNumber("BATCH-001");
+
+return materialUploadRepository.save(
+    new MaterialUpload(
+        fileName,
+        uploadedBy,
+        ocrResult.getHeatNumber(),
+        ocrResult.getGrade(),
+        ocrResult.getDimension(),
+        ocrResult.getQuantity(),
+        ocrResult.getRawText(),
+        ocrResult.getConfidence()
+    )
+);
         // Call FastAPI OCR Endpoint
         try {
             System.out.println("==================================================");
@@ -65,12 +95,7 @@ public class MaterialUploadService {
             });
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<OcrResponseDto> response = restTemplate.postForEntity(
-                    ocrServiceUrl + "/ocr/extract",
-                    requestEntity,
-                    OcrResponseDto.class
-                );
-
+            
             System.out.println("==================================================");
             System.out.println("<<< MATERIAL OCR RESPONSE LOG <<<");
             System.out.println("Status: " + response.getStatusCode());
