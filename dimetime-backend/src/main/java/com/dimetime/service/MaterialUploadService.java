@@ -47,7 +47,7 @@ public class MaterialUploadService {
     // DEMO DATA (OCR BYPASS)
     ocrResult.setHeatNumber("HT-2026-001");
     ocrResult.setGrade("SS304");
-    ocrResult.setDimension("1000X500X25 MM");
+    ocrResult.setDimension("10X1500X6000 MM");
     ocrResult.setQuantity("500 KG");
     ocrResult.setRawText("Demo OCR Response");
     ocrResult.setConfidence(0.98);
